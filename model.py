@@ -21,7 +21,9 @@ from keras import regularizers
 ### Initialization ###
 ######################
 
-path = '../data/data/'
+path = '../data/data/' # local workspace
+# path = '/opt/data/' # udacity workspace
+
 example_img = plt.imread(path+'IMG/center_2016_12_01_13_30_48_287.jpg')
 img_shape = example_img.shape
 
@@ -38,12 +40,12 @@ left_crop = 0
 right_crop = 0
 
 test_size = .2
-angle_offset = .25
+angle_offset = .2
 batch_size = 32
 num_epochs = 20
 
 # L2-Regularization
-l2_penal = .0
+l2_penal = .0001
 # Dropout rates
 dr1 = 0.3
 dr2 = 0.2
@@ -57,15 +59,26 @@ dr3 = 0.1
 # create list with all image names and angles
 def read_csv():
 	samples = []
+	_angles_orig = []
+	_angles_aug = []
 	with open(path+'driving_log.csv') as csvfile:
 	    reader = csv.reader(csvfile)
 	    next(reader) # skip headers in first row
 	    for line in reader:
-	    	# Append twice for data augmentation. Noise layer in the model avoids using the identical images.
+	        # samples.append(line)
 	        samples.append(line)
-	        samples.append(line)
+	        # append sample again for all angles != 0 (balancing) # Noise layer in the model avoids using the identical images.
+	        _angle = float(line[3])
+	        _angles_orig.append(_angle)
+	        _angles_aug.append(_angle)
+	        # if _angle!=0:
+        	num_copies = abs(int(np.round(_angle*10)))
+        	# print(num_copies)
+        	for i in range(num_copies):
+	        	samples.append(line)
+	        	_angles_aug.append(_angle)
 	print('number of images (augmented data set): ',len(samples))
-	return samples
+	return samples, _angles_orig, _angles_aug
 
 # Model is based on NVIDIAS paper "End to End Learning for Self-Driving Cars"
 def def_model():
@@ -77,7 +90,7 @@ def def_model():
 	# crop images
 	model.add(Cropping2D(cropping=((top_crop, bottom_crop),(left_crop, right_crop))))
 	# add noise layer
-	model.add(GaussianNoise(.1))
+	model.add(GaussianNoise(.25))
 	# add convolutional layers
 	model.add(Conv2D(24, kernel_size=(5, 5), strides=(2,2), activation='relu'))#, subsample=(2, 2)))
 	model.add(Conv2D(36, kernel_size=(5, 5), strides=(2,2), activation='relu'))#, subsample=(2, 2)))
@@ -165,9 +178,12 @@ def prepare_data(samples):
 # check if gpu is available for training
 def check_gpu_status():
 
-	print(tf.test.is_gpu_available())
-	print(tf.test.gpu_device_name())
-	print(tf.test.is_built_with_cuda())
+	print('\n\nIs GPU available: ', tf.test.is_gpu_available())
+	if not tf.test.is_gpu_available:
+		raise Exception('GPU not available')
+	print('GPU device name: ', tf.test.gpu_device_name())
+	print('Is built with cuda: ', tf.test.is_built_with_cuda())
+	print('\n')
 
 
 # train and validate the model
@@ -179,7 +195,7 @@ def train_model(model, num_train_samples, num_validation_samples, train_generato
 
 	# fit model
 	history = model.fit_generator(train_generator, 
-	                    steps_per_epoch=np.ceil(num_train_samples*6/batch_size), 
+	                    steps_per_epoch=np.ceil(num_train_samples*6/batch_size), # the factor 6 is there because the generator outputs all 3 camera images plus flipped version
 	                    validation_data=validation_generator, 
 	                    validation_steps=np.ceil(num_validation_samples*6/batch_size), 
 	                    callbacks=[checkpoint, stopper],
@@ -203,7 +219,7 @@ def train_model(model, num_train_samples, num_validation_samples, train_generato
 
 def main():
 	
-	samples = read_csv()
+	samples, _, _ = read_csv()
 	model = def_model()
 	num_train_samples, num_validation_samples, train_generator, validation_generator = prepare_data(samples)
 	check_gpu_status()

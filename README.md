@@ -23,18 +23,15 @@ The steps of the project are the following:
 ---
 
 
+### Model architecture
+
+Since the NVIDIA model from the [End to End Learning for Self-Driving Cars](http://images.nvidia.com/content/tegra/automotive/images/2016/solutions/pdf/end-to-end-dl-using-px.pdf) paper was designed exactly for this purpose, I adapted the model for this project.
 
 
 
 
----
 
----
-The goals / steps of this project are the following:
-* Use the simulator to collect data of good driving behavior 
-* Design, train and validate a model that predicts a steering angle from image data
-* Use the model to drive the vehicle autonomously around the first track in the simulator. The vehicle should remain on the road for an entire loop around the track.
-* Summarize the results with a written report
+
 
 ### Dependencies
 This lab requires:
