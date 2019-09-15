@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 import os
 import csv
 import sklearn
@@ -16,15 +17,12 @@ from keras.optimizers import Adam
 from keras.callbacks import ModelCheckpoint, EarlyStopping
 from keras import regularizers
 
-
 ######################
 ### Initialization ###
 ######################
 
-path = '../data/data/' # local workspace
-# path = '/opt/data/' # udacity workspace
-
-example_img = plt.imread(path+'IMG/center_2016_12_01_13_30_48_287.jpg')
+path = '../data/'
+example_img = plt.imread(path+'IMG/center_2019_09_14_10_46_34_907.jpg')
 img_shape = example_img.shape
 
 save_path = './model.h5'
@@ -40,9 +38,9 @@ left_crop = 0
 right_crop = 0
 
 test_size = .2
-angle_offset = .2
+angle_offset = .25
 batch_size = 32
-num_epochs = 20
+num_epochs = 5
 
 # L2-Regularization
 l2_penal = .0001
@@ -56,29 +54,38 @@ dr3 = 0.1
 ### Function definitions ###
 ############################
 
-# create list with all image names and angles
 def read_csv():
-	samples = []
-	_angles_orig = []
-	_angles_aug = []
-	with open(path+'driving_log.csv') as csvfile:
-	    reader = csv.reader(csvfile)
-	    next(reader) # skip headers in first row
-	    for line in reader:
-	        # samples.append(line)
-	        samples.append(line)
-	        # append sample again for all angles != 0 (balancing) # Noise layer in the model avoids using the identical images.
-	        _angle = float(line[3])
-	        _angles_orig.append(_angle)
-	        _angles_aug.append(_angle)
-	        # if _angle!=0:
-        	num_copies = abs(int(np.round(_angle*10)))
-        	# print(num_copies)
-        	for i in range(num_copies):
-	        	samples.append(line)
-	        	_angles_aug.append(_angle)
-	print('number of images (augmented data set): ',len(samples))
-	return samples, _angles_orig, _angles_aug
+
+	columns = ['center', 'left', 'right', 'steering', 'throttle', 'brake', 'speed']
+
+	data = pd.read_csv(path+'driving_log.csv', usecols=[0,1,2,3], names=columns)
+
+	return data
+
+
+# # create list with all image names and angles
+# def read_csv():
+# 	samples = []
+# 	_angles_orig = []
+# 	_angles_aug = []
+# 	with open(path+'driving_log.csv') as csvfile:
+# 	    reader = csv.reader(csvfile)
+# 	    next(reader) # skip headers in first row
+# 	    for line in reader:
+# 	        # samples.append(line)
+# 	        samples.append(line)
+# 	        # append sample again for all angles != 0 (balancing) # Noise layer in the model avoids using the identical images.
+# 	        _angle = float(line[3])
+# 	        _angles_orig.append(_angle)
+# 	        _angles_aug.append(_angle)
+# 	        # if _angle!=0:
+#         	num_copies = abs(int(np.round(_angle*10)))
+#         	# print(num_copies)
+#         	for i in range(num_copies):
+# 	        	samples.append(line)
+# 	        	_angles_aug.append(_angle)
+# 	print('number of images (augmented data set): ',len(samples))
+# 	return samples, _angles_orig, _angles_aug
 
 # Model is based on NVIDIAS paper "End to End Learning for Self-Driving Cars"
 def def_model():
@@ -118,21 +125,21 @@ def def_model():
 
 
 # Generator is defined to avoid loading all data into memory at once
-def generator(samples, batch_size=32):
-    num_samples = len(samples)
+def generator(split_data, batch_size=32):
+    num_samples = len(split_data)
     while 1:
-        samples = sklearn.utils.shuffle(samples)
+        split_data = sklearn.utils.shuffle(split_data)
         for offset in range(0, num_samples, batch_size):
-            batch_samples = samples[offset:offset+batch_size]
+            batch_samples = split_data.iloc[offset:offset+batch_size]
 
             images = []
             angles = []
-            for batch_sample in batch_samples:
+            for batch_sample in batch_samples.iterrows():
                 
                 # center camera image
-                center_img_name = path+'IMG/'+batch_sample[0].split('/')[-1]
+                center_img_name = path+batch_sample[1].center
                 center_img = plt.imread(center_img_name)
-                center_angle = float(batch_sample[3])
+                center_angle = float(batch_sample[1].steering)
                 images.append(center_img)
                 angles.append(center_angle)
                 # include flipped image
@@ -140,7 +147,7 @@ def generator(samples, batch_size=32):
                 angles.append(-center_angle)
                 
                 # left camera images
-                left_img_name = path+'IMG/'+batch_sample[1].split('/')[-1]
+                left_img_name = path+batch_sample[1].left
                 left_img = plt.imread(left_img_name)
                 left_angle = center_angle + angle_offset
                 images.append(left_img)
@@ -150,7 +157,7 @@ def generator(samples, batch_size=32):
                 angles.append(-left_angle)
                 
                 # right camera images
-                right_img_name = path+'IMG/'+batch_sample[2].split('/')[-1]
+                right_img_name = path+batch_sample[1].right
                 right_img = plt.imread(right_img_name)
                 right_angle = center_angle - angle_offset
                 images.append(right_img)
@@ -165,9 +172,9 @@ def generator(samples, batch_size=32):
 
 
 # prepare data by splitting into training and validation samples and creating generators
-def prepare_data(samples):
+def prepare_data(data):
 
-	train_samples, validation_samples = train_test_split(samples, test_size=0.2)
+	train_samples, validation_samples = train_test_split(data, test_size=0.2)
 
 	train_generator = generator(train_samples, batch_size=batch_size)
 	validation_generator = generator(validation_samples, batch_size=batch_size)
@@ -219,9 +226,9 @@ def train_model(model, num_train_samples, num_validation_samples, train_generato
 
 def main():
 	
-	samples, _, _ = read_csv()
+	data = read_csv()
 	model = def_model()
-	num_train_samples, num_validation_samples, train_generator, validation_generator = prepare_data(samples)
+	num_train_samples, num_validation_samples, train_generator, validation_generator = prepare_data(data)
 	check_gpu_status()
 	train_model(model, num_train_samples, num_validation_samples, train_generator, validation_generator)
 
