@@ -89,7 +89,7 @@ def augment_data(df):
 	    
 	    if elem_per_bin>0:
 	        aug_fact = int(max_count / elem_per_bin)
-	        df_aug = df_aug.append([df[ind]]*max(int(aug_fact/3),1), ignore_index=True)
+	        df_aug = df_aug.append([df[ind]]*max(int(aug_fact/4),1), ignore_index=True)
 
 	# add noise for not using the identical angles for augmented images
 	df_aug.steering += np.random.normal(-0.005,0.005,len(df_aug.steering))
@@ -198,7 +198,7 @@ def check_gpu_status():
 	"""Check if GPU is available for training."""
 
 	print('\n\nIs GPU available: ', tf.test.is_gpu_available())
-	if not tf.test.is_gpu_available:
+	if not tf.test.is_gpu_available():
 		raise Exception('GPU not available')
 	print('GPU device name: ', tf.test.gpu_device_name())
 	print('Is built with cuda: ', tf.test.is_built_with_cuda())
