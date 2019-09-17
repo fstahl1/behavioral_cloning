@@ -1,9 +1,9 @@
-# Self-Driving Car Engineer Nanodegree
 
 [![Udacity - Self-Driving Car NanoDegree](https://s3.amazonaws.com/udacity-sdc/github/shield-carnd.svg)](http://www.udacity.com/drive)
----
 
-# Deep Learning Project: Behavioral Cloning
+# Self-Driving Car Engineer Nanodegree
+
+**Behavioral Cloning Project**
 
 Design, train and validate a model for predicting steering angles from image data
 
@@ -21,7 +21,6 @@ The steps of the project are the following:
 * Test of the trained model with the [Udacity simulator](https://github.com/udacity/self-driving-car-sim)
 * Video recording of the vehicle driving one full lap autonomously
 
----
 
 ## Submitted files
 
@@ -33,7 +32,13 @@ The project includes the following files:
 * video.mp4: recorded driving in autonomous mode
 * data_exploration.ipynb: jupyter notebook for data exploration
 * data_exploration.html: html file of the executed .ipynb file
-* 
+
+## How to run the code
+
+Using the [Udacity simulator](https://github.com/udacity/self-driving-car-sim) and the drive.py file, the car can be driven autonomously around the trach by executing
+```sh
+python drive.py model.h5
+```
 
 ## Model architecture
 
@@ -93,11 +98,12 @@ Since it is a regression network which is supposed to output a continuous steeri
 
 
 
-### Data exploration
+## Data exploration
 
 The dataset basically consists of one round of driving in the middle of the road as precisely as possible and one recovery round, where the recording was started at the side of the road and steered back to the center. Additionally, the two curves with high curvature were driven again. The raw dataset consists of 5283 images.
 
-#### Augmentation
+
+### Augmentation
 
 Since the data is highly unbalanced with most samples at zero angle, those samples with angles unequal zero were duplicated. The resulting distribution is shown below. The augmented data has length 10431.
 
@@ -107,17 +113,27 @@ Eventually, the full augmented data set consists of 62586 samples.
 
 To avoid using the identical duplicated images for training, a noise layer was added to the network.
 
-#### Example images
+
+### Example images
 
 Example images are provided below for different steering angles and all three camera positions.
 ![png](imgs/example_imgs.png)
 
-#### Histogram and angle over time
+
+### Histogram and angle over time
 
 Following plots show the steering angle distribution and angle over time of the raw data set on the left and the augmented data set on the right. Since the car drove zig-zag with uniform steering angle distribution, the distribution in the upper right was chosen.
 ![png](imgs/plots.png)
 
 
-### Model Training
+## Model Training
 
-A generator was used for loading the images in batches instead of all at once. Training was done using ADAM optimizer which includes an adaptive learning rate. The model was trained for 5 epochs with a batch size of 32. The recorded data was split into a training set of 80% of the images and a validation set of 20%.
+A generator was used for loading the images in batches instead of all at once. Training was done using ADAM optimizer which includes an adaptive learning rate. The model was trained for 5 epochs with a batch size of 32. The recorded data was split into a training set of 80% of the images and a validation set of 20%. For regularization, a gaussian noise layers and dropout layers were used. The following figure shows the mean squared error loss for the 3 epochs. The model tends to overfit, but since the error is relatively small and the model shows an acceptable driving behavior, regularization was not further increased.
+
+![png](imgs/eval.png)
+
+## Results
+
+The vehicle was driven at 30 mph autonomously on the whole track, which can be seen in the included video.mp4 file. The following gif shows the vehicle driving the two hardest curves of the track.
+
+![gif](./imgs/video_cut.gif)
