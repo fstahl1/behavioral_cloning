@@ -170,6 +170,7 @@ df.tail()
 ```python
 fig, axs = plt.subplots(3, 3, figsize=(22,12))
 plt.tight_layout()
+
 idx_roadside_middle = df.steering.index[df.steering==0][0]
 idx_roadside_left = df.steering.idxmax()
 idx_roadside_right = df.steering.idxmin()
@@ -215,62 +216,82 @@ for ax in axs.flat:
 ```python
 df = read_csv()
 
-print('Size of original data set: ', len(df))
+# print('Size of original data set: ', len(df))
 
-(counts, bins, _) = plt.hist(df.steering, bins=n_bins)
-plt.title('Histogram: original data')
-plt.xlabel('Steering angle')
-plt.ylabel('Counts')
-plt.show()
+# (counts, bins, _) = plt.hist(df.steering, bins=n_bins)
+# plt.title('Histogram: original data')
+# plt.xlabel('Steering angle')
+# plt.ylabel('Counts')
+# plt.show()
 
-plt.plot(df.steering)
-plt.title('Steering angle over time')
-plt.xlabel('Time samples')
-plt.ylabel('Steering anlge')
-plt.show()
+# plt.plot(df.steering)
+# plt.title('Steering angle over time')
+# plt.xlabel('Time samples')
+# plt.ylabel('Steering anlge')
+# plt.show()
+
 ```
-
-    Size of original data set:  5283
-
-
-
-![png](output_8_1.png)
-
-
-
-![png](output_8_2.png)
-
 
 ### Plot histogram and angle over time of augmented data
 
 
 ```python
-df_aug = augment_data(df)
+# df_aug = augment_data(df)
 
-print('Size of augmented data set: ', len(df_aug))
+# print('Size of augmented data set: ', len(df_aug))
 
-plt.hist(df_aug.steering, bins=bins)
-plt.title('Histogram: augmented data')
-plt.xlabel('Steering angle')
-plt.ylabel('Counts')
-plt.show()
+# plt.hist(df_aug.steering, bins=bins)
+# plt.title('Histogram: augmented data')
+# plt.xlabel('Steering angle')
+# plt.ylabel('Counts')
+# plt.show()
 
-plt.plot(df_aug.steering)
-plt.title('Steering angle over time')
-plt.xlabel('Time samples')
-plt.ylabel('Steering anlge')
-plt.show()
+# plt.plot(df_aug.steering)
+# plt.title('Steering angle over time')
+# plt.xlabel('Time samples')
+# plt.ylabel('Steering anlge')
+# plt.show()
 ```
 
+
+```python
+df_aug = augment_data(df)
+print('Size of raw data set: ', len(df))
+print('Size of augmented data set: ', len(df_aug))
+
+
+fig, axs = plt.subplots(2, 2, figsize=(25,18))
+# plt.tight_layout()
+
+fontsize2 = 15
+
+(counts, bins, _) = axs[0,0].hist(df.steering, bins=n_bins)
+axs[0,0].set_title('Raw data: Histogram', fontsize=fontsize2)
+axs[0,0].set_xlabel('Steering angle', fontsize=fontsize2)
+axs[0,0].set_ylabel('Counts', fontsize=fontsize2)
+
+axs[1,0].plot(df.steering)
+axs[1,0].set_title('Raw data: Steering angle over time', fontsize=fontsize2)
+axs[1,0].set_xlabel('Steering angle', fontsize=fontsize2)
+axs[1,0].set_ylabel('Counts', fontsize=fontsize2)
+
+axs[0,1].hist(df_aug.steering, bins=bins)
+axs[0,1].set_title('Augmented data: Histogram', fontsize=fontsize2)
+axs[0,1].set_xlabel('Steering angle', fontsize=fontsize2)
+axs[0,1].set_ylabel('Counts', fontsize=fontsize2)
+
+axs[1,1].plot(df_aug.steering)
+axs[1,1].set_title('Augmented data: Steering angle over time', fontsize=fontsize2)
+axs[1,1].set_xlabel('Steering angle', fontsize=fontsize2)
+axs[1,1].set_ylabel('Counts', fontsize=fontsize2);
+```
+
+    Size of raw data set:  5283
     Size of augmented data set:  10431
 
 
 
-![png](output_10_1.png)
-
-
-
-![png](output_10_2.png)
+![png](output_11_1.png)
 
 
 ### Plot model
@@ -329,7 +350,7 @@ plot_model(model, to_file='model.png')
 
 
 
-![png](output_12_1.png)
+![png](output_13_1.png)
 
 
 

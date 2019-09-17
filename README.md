@@ -30,8 +30,8 @@ Since the NVIDIA model from the [End to End Learning for Self-Driving Cars](http
 
 The model is basically a convolutional neural network (CNN) with five convolutional layers and three fully connected layers and is shown below. 
 
-* Normalization and Cropping: After normalizing the input images in the first layer, the top of each image is cropped in the second layer since the upper part mostly shows sky and trees and does not contain any useful features for steering the vehicle.
-* Gaussian noise: The next layer adds gaussian noise to the images to avoid using identical flipped images for training.
+* Normalization and Downsampling: After normalizing the input images in the first layer, the images are downsampled by 2 in the second layer to reduce training time.
+* Gaussian noise: The next layer adds gaussian noise to the images to avoid using identical flipped images for training. The layer has a regularizing effect and is only active during training.
 * Convolutional layers: Next, five convolutional layers are added. Like the NVIDIA model, the first three layers use a 5x5 Kernel with 2x2 stride followed by two layers with 3x3 Kernel and 1x1 stride.
 * Flatten and Dense layers: After flattening the 2D images, the model consists of three fully connected layers with a dropout layer for each to avoid overfitting.
 
@@ -81,27 +81,32 @@ Since it is a regression network which is supposed to output a continuous steeri
 
 
 
-## Model training
-
-A generator was used to avoid loading all images into memory at once. Training was done using ADAM optimizer which works with includes an adaptive learning rate.
-
-The dataset basically consists of one round of driving in the middle of the road as precisely as possible and one recovery round, where the recording was started at the side of the road and steered back to the center. Additionally, the two curves with high curvature were driven again.
-The images of all three cameras are used with an offset angle of 0.25 for the left image and -0.25 for the right image. Furthermore, a flipped version of each image was included to the dataset.
 
 ### Data exploration
 
-#### Example image
+The dataset basically consists of one round of driving in the middle of the road as precisely as possible and one recovery round, where the recording was started at the side of the road and steered back to the center. Additionally, the two curves with high curvature were driven again. The raw dataset consists of 5283 images.
+
+#### Augmentation
+
+Since the data is highly unbalanced with most samples at zero angle, those samples with angles unequal zero were duplicated. The resulting distribution is shown below. The augmented data has length 10431.
+
+In addition, the images of all three cameras are used with an offset angle of 0.2 for the left image and -0.2 for the right image. Since training data is biased towards the left, a flipped version of each image is included to the dataset, too.
+
+Eventually, the full augmented data set consists of 62586 samples.
+
+To avoid using the identical duplicated images for training, a noise layer was added to the network.
+
+#### Example images
 
 Example images are provided below for different steering angles and all three camera positions.
 ![png](imgs/example_imgs.png)
 
 #### Histogram and angle over time
 
+Following plots show the steering angle distribution and angle over time of the raw data set on the left and the augmented data set on the right. Since the car drove zig-zag with uniform steering angle distribution, the distribution in the upper right was chosen.
+![png](imgs/plots.png)
 
-![png](imgs/hist_orig.png)
 
-![png](imgs/angle_orig.png)
+### Model Training
 
-![png](imgs/hist_aug.png)
-
-![png](imgs/angle_aug.png)
+A generator was used for loading the images in batches instead of all at once. Training was done using ADAM optimizer which includes an adaptive learning rate. The model was trained for 5 epochs with a batch size of 32. The recorded data was split into a training set of 80% of the images and a validation set of 20%.

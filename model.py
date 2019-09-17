@@ -40,19 +40,19 @@ save_path = './model.h5'
 n_bins = 15
 
 # offset steering value for left and right camera images
-angle_offset = .25
+angle_offset = .2
 # test size ratio (train-test-split)
 test_size = .2
 # training parameters
 batch_size = 32
-num_epochs = 5
+num_epochs = 3
 
-# L2-regularization rate
+# L2-regularization rate for fully connected layers
 l2_penal = 0#.0001
 # Dropout rates for fully connected layers
-dr1 = 0.3
-dr2 = 0.2
-dr3 = 0.1
+dr1 = 0#0.3
+dr2 = 0#0.2
+dr3 = 0#0.1
 
 
 
@@ -82,16 +82,21 @@ def augment_data(df):
 	# initialize dataframe for augmented data
 	df_aug = pd.DataFrame(columns=list(df.columns))
 
+	# iterate over all bins
 	for curr_bin in range(n_bins):
 	    
+	    # find indices of all samples in current bin
 	    ind = (df.steering > bins[curr_bin]) & (df.steering <= bins[curr_bin+1])
-	    elem_per_bin = sum(ind)
+	    n_bin_elem = sum(ind)
 	    
-	    if elem_per_bin>0:
-	        aug_fact = int(max_count / elem_per_bin)
+	    # check if number of elements in current bin is larger than zero to avoid division by 0
+	    if n_bin_elem>0:
+	    	# aug_fact determines how often the samples in the current bin are duplicated
+	        aug_fact = int(max_count / n_bin_elem)
+	        # duplicate samples
 	        df_aug = df_aug.append([df[ind]]*max(int(aug_fact/4),1), ignore_index=True)
 
-	# add noise for not using the identical angles for augmented images
+	# add noise to avoid using identical angles for the duplicated images
 	df_aug.steering += np.random.normal(-0.005,0.005,len(df_aug.steering))
 	    
 	return df_aug
@@ -102,13 +107,13 @@ def def_model():
 	"""Define CNN model based on NVIDIA paper \"End to End Learning for Self-Driving Cars\"."""
 
 	model = Sequential()
-	# normalize images 
+	# normalize imagesdropoutdropout 
 	model.add(Lambda(lambda x: x/127.5 - 1., input_shape=(img_shape[0], img_shape[1], img_shape[2]), 
 		output_shape=(img_shape[0], img_shape[1], img_shape[2])))
 	 # downscale image
 	model.add(MaxPool2D((2,2)))
 	# add noise layer
-	model.add(GaussianNoise(.25))
+	model.add(GaussianNoise(.25))#.25
 	# add convolutional layers
 	model.add(Conv2D(24, kernel_size=(5, 5), strides=(2,2), activation='relu'))#, subsample=(2, 2)))
 	model.add(Conv2D(36, kernel_size=(5, 5), strides=(2,2), activation='relu'))#, subsample=(2, 2)))
