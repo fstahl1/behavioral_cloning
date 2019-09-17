@@ -50,9 +50,9 @@ num_epochs = 3
 # L2-regularization rate for fully connected layers
 l2_penal = 0#.0001
 # Dropout rates for fully connected layers
-dr1 = 0#0.3
-dr2 = 0#0.2
-dr3 = 0#0.1
+dr1 = 0.3#0.3
+dr2 = 0.1#0.2
+dr3 = 0.1#0.1
 
 
 
@@ -94,11 +94,11 @@ def augment_data(df):
 	    	# aug_fact determines how often the samples in the current bin are duplicated
 	        aug_fact = int(max_count / n_bin_elem)
 	        # duplicate samples
-	        df_aug = df_aug.append([df[ind]]*max(int(aug_fact/4),1), ignore_index=True)
+	        df_aug = df_aug.append([df[ind]]*max(int(aug_fact/6),1), ignore_index=True)
 
 	# add noise to avoid using identical angles for the duplicated images
 	df_aug.steering += np.random.normal(-0.005,0.005,len(df_aug.steering))
-	    
+
 	return df_aug
 
 
@@ -251,7 +251,6 @@ def main():
 	n_train, n_valid, train_generator, valid_generator = prepare_data(df_aug)
 	check_gpu_status()
 	train_model(model, n_train, n_valid, train_generator, valid_generator)
-
 
 if __name__ == "__main__":
 	main()

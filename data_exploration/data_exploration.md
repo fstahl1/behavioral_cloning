@@ -287,7 +287,7 @@ axs[1,1].set_ylabel('Counts', fontsize=fontsize2);
 ```
 
     Size of raw data set:  5283
-    Size of augmented data set:  10431
+    Size of augmented data set:  8269
 
 
 

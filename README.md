@@ -13,16 +13,27 @@ Design, train and validate a model for predicting steering angles from image dat
 
 The steps of the project are the following:
 
-* Data acquisition
+* Data acquisition with the Udacity simulator
 * Data exploration
 * Data augmentation
-* Adaption of the CNN architecture from the NVIDIA paper [End to End Learning for Self-Driving Cars](http://images.nvidia.com/content/tegra/automotive/images/2016/solutions/pdf/end-to-end-dl-using-px.pdf)
-* Model training
+* Building of a convolutional neural network in Keras for predicting steering angles from images
+* Model training and validation
 * Test of the trained model with the [Udacity simulator](https://github.com/udacity/self-driving-car-sim)
 * Video recording of the vehicle driving one full lap autonomously
 
 ---
 
+## Submitted files
+
+The project includes the following files:
+* model.py: containing the script to create and train the model
+* drive.py: for driving the car in autonomous mode
+* model.h5: containing the trained convolutional neural network
+* README.md: summarizes the results
+* video.mp4: recorded driving in autonomous mode
+* data_exploration.ipynb: jupyter notebook for data exploration
+* data_exploration.html: html file of the executed .ipynb file
+* 
 
 ## Model architecture
 
